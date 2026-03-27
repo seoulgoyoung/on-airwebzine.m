@@ -19,13 +19,18 @@
             color: #334155;
             -webkit-tap-highlight-color: transparent;
         }
-        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes subtle-twinkle { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.85; transform: scale(1.02); } }
-        .animate-spin-slow { animation: spin-slow 8s linear infinite; }
         .animate-subtle-twinkle { animation: subtle-twinkle 2s ease-in-out infinite; }
         .animate-bounce-slow { animation: bounce 2s infinite; }
         @keyframes bounce { 0%, 100% { transform: translateY(-5%); } 50% { transform: translateY(0); } }
         [data-lucide] { display: inline-block; vertical-align: middle; }
+        
+        /* 팝업 애니메이션 */
+        .modal-enter { animation: modalFadeIn 0.3s ease-out forwards; }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
     </style>
 </head>
 <body class="antialiased text-center">
@@ -46,7 +51,7 @@
         const WEBZINE_DATA = [
             {
                 id: 1, month: "3", title: "Start: 다시 피어나는 청년", issue: "Vol. 1",
-                status: "published", thumbnail: "300.png",
+                status: "published", thumbnail: "300.png", isComingSoon: true, // 3월호 팝업용 플래그
                 description: "3-4월 주요 프로그램 후기부터 생생한 참여자 인터뷰까지, 청년들의 도약을 담은 알찬 콘텐츠를 만나보세요!",
                 cardBg: "bg-[#EEF2FF]", accent: "text-indigo-600", border: "border-indigo-400"
             },
@@ -84,13 +89,39 @@
 
         const App = () => {
             const [searchTerm, setSearchTerm] = useState("");
+            const [showModal, setShowModal] = useState(false);
 
             const filteredWebzines = WEBZINE_DATA.filter(webzine =>
                 webzine.title.includes(searchTerm) || webzine.month.includes(searchTerm)
             );
 
+            const handleComingSoonClick = (e) => {
+                e.preventDefault();
+                setShowModal(true);
+            };
+
             return (
                 <div className="min-h-screen flex flex-col items-center">
+                    {/* 곧 공개 예정 팝업 */}
+                    {showModal && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center px-6">
+                            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowModal(false)}></div>
+                            <div className="relative bg-white rounded-[2rem] p-8 shadow-2xl max-w-xs w-full modal-enter text-center border-4 border-indigo-100">
+                                <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Icon name="clock" size={32} className="text-indigo-600" />
+                                </div>
+                                <h4 className="text-xl text-slate-800 mb-2 font-bold text-center">알림</h4>
+                                <p className="text-slate-500 mb-6 leading-relaxed text-center">3월호는 곧 공개될 예정입니다.<br/>조금만 더 기다려주세요! 😊</p>
+                                <button 
+                                    onClick={() => setShowModal(false)}
+                                    className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all active:scale-95"
+                                >
+                                    확인
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="w-full bg-indigo-600 text-white py-1.5 px-4 text-center text-[10px] sm:text-xs font-medium">
                         🚀 서울고용센터와 함께하는 청년들의 무한한 성장판! 
                     </div>
@@ -99,28 +130,28 @@
                         <div className="max-w-xl w-full flex flex-col items-center">
                             <div className="relative w-32 sm:w-40 mb-8">
                                 <div className="absolute -top-4 -right-12 bg-indigo-600 text-white px-3 py-1 rounded-full shadow-lg transform rotate-6 z-20">
-                                    <p className="text-[10px] font-bold uppercase tracking-widest">ON-AIR 🎤</p>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-white">ON-AIR 🎤</p>
                                 </div>
                                 <img src="300.png" alt="리포터" className="w-full h-auto drop-shadow-xl" />
                             </div>
 
-                            <div className="inline-flex items-center gap-1.5 bg-yellow-400 text-slate-900 px-4 py-2 rounded-full mb-6 font-bold text-[11px] sm:text-[13px] border border-yellow-500/20 shadow-sm">
+                            <div className="inline-flex items-center gap-1.5 bg-yellow-400 text-slate-900 px-4 py-1.5 rounded-full mb-6 font-bold text-[11px] sm:text-[13px] border border-yellow-500/20 shadow-sm">
                                 <Icon name="smile" size={16} className="text-indigo-700" />
                                 <span>청년의 꿈과 가능성을 연결하는 취업 지원 허브, ✨서울고용센터✨</span>
                             </div>
 
-                            <h1 className="text-4xl sm:text-5xl md:text-7xl font-normal text-slate-900 mb-6 leading-tight tracking-tight">
+                            <h1 className="text-4xl sm:text-5xl md:text-7xl font-normal text-slate-900 mb-6 leading-tight tracking-tight text-center">
                                 청년 <span className="text-indigo-600 underline decoration-indigo-200 decoration-4 underline-offset-4 italic uppercase">ON-AIR</span><br />
                                 <span className="text-3xl sm:text-4xl">웹진 아카이브</span>
                             </h1>
 
-                            <p className="text-slate-600 text-sm sm:text-base md:text-lg mb-10 leading-relaxed max-w-[340px] sm:max-w-md mx-auto whitespace-pre-wrap px-2">
+                            <p className="text-slate-600 text-sm sm:text-base md:text-lg mb-10 leading-relaxed max-w-[340px] sm:max-w-md mx-auto whitespace-pre-wrap px-2 text-center">
                                 서툰 첫걸음이 단단한 도약이 되기까지,<br/> 
                                 서울고용센터가 청년들과 함께 일궈낸 소중한 조각들을<br/> 
                                 <span className="text-indigo-600 font-bold">'청년ON-AIR'</span>에서 확인하세요. ✨
                             </p>
 
-                            <div className="relative w-full max-w-[280px] sm:max-w-xs group">
+                            <div className="relative w-full max-w-[280px] sm:max-w-xs group mx-auto">
                                 <Icon name="search" size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-300" />
                                 <input 
                                     type="text" 
@@ -133,56 +164,39 @@
                         </div>
                     </header>
 
-                    {/* CONTENT - 한 줄에 무조건 2개씩(grid-cols-2) 배치 */}
                     <main className="max-w-6xl w-full px-4 py-12">
-                        <div className="grid grid-cols-2 gap-4 sm:gap-8">
+                        {/* 2열 3행 그리드 */}
+                        <div className="grid grid-cols-2 gap-4 sm:gap-8 mb-16">
                             {filteredWebzines.map((webzine) => {
                                 const isPublished = webzine.status === 'published';
                                 return (
                                     <div key={webzine.id} className={`flex flex-col ${webzine.cardBg} rounded-[1.5rem] sm:rounded-[2.5rem] transition-all duration-300 border-2 overflow-hidden shadow-sm ${isPublished ? `border-indigo-400 ring-2 ring-indigo-50 scale-[1.02] z-10` : `border-dashed border-slate-200 opacity-90`}`}>
-                                        
                                         <div className={`relative h-28 sm:h-48 flex items-center justify-center ${isPublished ? 'bg-white/40' : 'bg-transparent'} p-3`}>
                                             <img src={webzine.thumbnail} alt={webzine.month} className="h-full w-auto object-contain mx-auto" />
+                                            <div className="absolute top-2 left-2 bg-white/90 px-2 py-0.5 rounded-full border border-white/50 z-10 shadow-sm text-slate-800 text-[9px] sm:text-[11px] font-bold">{webzine.issue}</div>
                                             
-                                            <div className="absolute top-2 left-2 bg-white/90 px-2 py-0.5 rounded-full border border-white/50 text-[9px] sm:text-[11px] font-bold text-slate-800 shadow-sm">
-                                                {webzine.issue}
-                                            </div>
-
                                             {isPublished && (
-                                                <div className="absolute top-0 right-0 bg-yellow-400 text-slate-900 px-2.5 py-1 rounded-bl-xl text-[9px] font-black shadow-sm uppercase">OPEN</div>
-                                            )}
-                                            
-                                            {!isPublished && (
-                                                <div className="absolute bottom-2 right-2 z-20">
-                                                    <div className="bg-white/90 shadow-sm text-slate-400 px-2 py-0.5 rounded-lg text-[8px] sm:text-[9px] font-black flex items-center gap-1 border border-white/50">
-                                                        <Icon name="clock" size={10} />공개 예정
-                                                    </div>
+                                                /* OPEN 배지 안 짤리게 위치 및 Z-index 조정 */
+                                                <div className="absolute top-2 right-2 z-30">
+                                                    <div className="bg-yellow-400 text-slate-900 px-3 py-1 rounded-full text-[9px] font-black shadow-lg border border-white/40 animate-pulse">OPEN</div>
                                                 </div>
                                             )}
+                                            
+                                            {!isPublished && <div className="absolute bottom-2 right-2 z-20"><div className="bg-white/90 shadow-sm text-slate-400 px-2 py-0.5 rounded-lg text-[8px] sm:text-[9px] font-black flex items-center gap-1 border border-white/50"><Icon name="clock" size={10} />공개 예정</div></div>}
                                         </div>
-
                                         <div className="p-4 sm:p-8 flex flex-col flex-grow items-center text-center">
-                                            <div className={`flex items-center gap-1 ${webzine.accent} mb-1.5 font-bold text-[10px] sm:text-sm`}>
-                                                <Icon name="map-pin" size={12} /><span>{webzine.month}월호 웹진</span>
-                                            </div>
-                                            <h2 className={`text-[12px] sm:text-xl font-normal mb-2 leading-tight ${isPublished ? 'text-slate-800' : 'text-slate-400'}`}>
-                                                {webzine.title}
-                                            </h2>
-                                            
-                                            <p className={`text-[10px] sm:text-sm ${isPublished ? 'text-slate-500' : 'text-slate-400'} leading-snug mb-4 line-clamp-2 px-1`}>
-                                                {webzine.description}
-                                            </p>
-                                            
+                                            <div className={`flex items-center gap-1 ${webzine.accent} mb-1.5 font-bold text-[10px] sm:text-sm`}><Icon name="map-pin" size={12} /><span>{webzine.month}월호 웹진</span></div>
+                                            <h2 className={`text-[12px] sm:text-xl font-normal mb-2 leading-tight ${isPublished ? 'text-slate-800' : 'text-slate-400'}`}>{webzine.title}</h2>
+                                            <p className={`text-[10px] sm:text-sm ${isPublished ? 'text-slate-500' : 'text-slate-400'} leading-snug mb-4 line-clamp-2 px-1 text-center`}>{webzine.description}</p>
                                             <div className="mt-auto w-full space-y-1.5">
                                                 {isPublished ? (
                                                     <div className="flex flex-col gap-1.5 w-full">
-                                                        <a href="#" target="_blank" className="bg-indigo-600 text-white py-2 rounded-xl font-bold text-[11px] sm:text-sm active:scale-95 transition-all w-full block shadow-md text-white">보기</a>
-                                                        <a href="#" download className="border border-indigo-200 text-indigo-600 py-2 rounded-xl font-bold text-[11px] sm:text-sm active:scale-95 transition-all bg-white w-full block shadow-sm">PDF</a>
+                                                        {/* 3월호 팝업 알림 연결 */}
+                                                        <a href="#" onClick={webzine.isComingSoon ? handleComingSoonClick : undefined} className="bg-indigo-600 text-white py-2 rounded-xl font-bold text-[11px] sm:text-sm active:scale-95 transition-all w-full block shadow-md text-center">보기</a>
+                                                        <a href="#" onClick={webzine.isComingSoon ? handleComingSoonClick : undefined} className="border border-indigo-200 text-indigo-600 py-2 rounded-xl font-bold text-[11px] sm:text-sm active:scale-95 transition-all bg-white w-full block shadow-sm text-center text-indigo-600">PDF</a>
                                                     </div>
                                                 ) : (
-                                                    <div className="w-full bg-slate-100 text-slate-400 py-2 rounded-xl font-bold text-[9px] sm:text-[11px] border border-dashed border-slate-200">
-                                                        Coming Soon
-                                                    </div>
+                                                    <div className="w-full bg-slate-100 text-slate-400 py-2 rounded-xl font-bold text-[9px] sm:text-[11px] border border-dashed border-slate-200 text-center">Coming Soon</div>
                                                 )}
                                             </div>
                                         </div>
@@ -190,54 +204,66 @@
                                 );
                             })}
                         </div>
+
+                        {/* Special Archive: 2025 청년 ON-Lounge */}
+                        <div className="w-full max-w-lg mx-auto bg-amber-50 rounded-[2.5rem] border-2 border-amber-200 p-6 shadow-sm border-dashed">
+                            <div className="flex items-center justify-center gap-2 mb-3">
+                                <Icon name="sparkles" className="text-amber-500" size={16} />
+                                <span className="text-amber-600 font-bold text-sm tracking-tight">SPECIAL ARCHIVE</span>
+                            </div>
+                            <h3 className="text-lg text-slate-800 mb-5 leading-tight text-center">지난 발자취, <br/> 2025 청년 ON-Lounge 돌아보기</h3>
+                            
+                            <div className="flex flex-col gap-2.5">
+                                <a 
+                                    href="https://heyzine.com/flip-book/e5912678f9.html?fbclid=PAZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQMMjU2MjgxMDQwNTU4AAGn0WwSh8y8ViyC5EE5WceaGH4rXK8VWEAXedkBm3y3IsZv7I9wFUxL1gI5fAU_aem_onNWGcgHiF6eRrRe8kKI9A" 
+                                    target="_blank"
+                                    className="flex items-center justify-center gap-2 bg-amber-400 text-slate-900 px-6 py-3.5 rounded-2xl font-bold text-sm active:scale-95 shadow-md w-full"
+                                >
+                                    <Icon name="layout-grid" size={16} /> 2025년 12월호 웹진 보기
+                                </a>
+                                
+                                {/* 요청하신 구글 드라이브 PDF 링크 추가 */}
+                                <a 
+                                    href="https://drive.google.com/file/d/1-7UAe9KPnu4hHH_ICMLe-GtsPuou9dAz/view?usp=sharing" 
+                                    target="_blank"
+                                    className="flex items-center justify-center gap-2 bg-white text-amber-600 border-2 border-amber-200 px-6 py-3.5 rounded-2xl font-bold text-sm active:scale-95 w-full text-center"
+                                >
+                                    <Icon name="download" size={16} /> PDF 파일 다운로드
+                                </a>
+                            </div>
+                        </div>
                     </main>
 
                     <footer className="w-full bg-white border-t-4 border-yellow-400 pt-12 pb-14 px-6 flex flex-col items-center">
-                        <div className="flex items-center gap-3 mb-4 text-left w-full justify-center">
+                        <div className="flex items-center gap-3 mb-4 text-left w-full justify-center text-indigo-600 uppercase">
                             <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-xl rotate-6 shrink-0 border-none"><Icon name="file-text" size={20} className="text-white" /></div>
                             <div className="text-left">
-                                <span className="text-xl sm:text-2xl font-normal text-indigo-600 uppercase block leading-none">서울고용센터 웹진 아카이브</span>
+                                <span className="text-xl sm:text-2xl font-normal block leading-none">서울고용센터 웹진 아카이브</span>
                                 <span className="text-slate-400 text-[10px] sm:text-xs font-bold tracking-widest uppercase block mt-1">YOUTH ON-AIR STUDIO</span>
                             </div>
                         </div>
-                        
-                        <p className="text-slate-500 text-xs sm:text-base mb-12 leading-relaxed max-w-[320px] sm:max-w-md mx-auto px-4 text-center">
-                            이곳은 서울고용센터와 청년들이 함께 만들어가는 <br/>
-                            꿈과 도전의 기록 저장소입니다. 우리의 내일을 응원해요!
-                        </p>
-                        
+                        <p className="text-slate-500 text-xs sm:text-base mb-12 leading-relaxed max-w-[320px] sm:max-w-md mx-auto px-4 text-center">이곳은 서울고용센터와 청년들이 함께 만들어가는 <br/> 꿈과 도전의 기록 저장소입니다. 우리의 내일을 응원해요!</p>
                         <div className="w-full max-w-[320px] flex flex-col items-center space-y-6 mb-12 mx-auto">
                             <div className="w-full bg-[#FAF8F2] p-2 rounded-[2.5rem] border border-orange-100 shadow-sm relative">
                                 <div className="rounded-[2rem] overflow-hidden border-4 border-white aspect-video bg-slate-200">
                                     <iframe title="지도" width="100%" height="100%" frameBorder="0" style={{ border: 0 }} src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3162.51866415053!2d126.98687797636183!3d37.56641262413551!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x357ca2e652a2022b%3A0xe5f9227f67713437!2z7ISc7Jq47Yq567OE7IucIOykkOq1rCDsgrzvOTrj6TrnoQgMzYz!5e0!3m2!1sko!2skr!4v1711514000000!5m2!1sko!2skr" allowFullScreen></iframe>
                                 </div>
-                                <a href="https://map.naver.com/p/directions/-/3zi2Hl,2AM4KL,%EC%84%9C%EC%9A%B8%EA%B3%A0%EC%9A%A9%EB%B3%B5%EC%A7%80%ED%94%8C%EB%9F%AC%EC%8A%A4%EC%84%BC%ED%84%B0,1845904326,PLACE_POI/-/car?c=15.00,0,0,0,dh" target="_blank" className="flex items-center justify-center gap-2 bg-[#03C75A] text-white py-3 mt-3 rounded-xl font-bold text-[11px] sm:text-xs active:scale-95 transition-all w-full shadow-md border-none">
-                                    <Icon name="navigation" size={14} /> 네이버 지도 길찾기
-                                </a>
+                                <a href="https://map.naver.com/p/directions/-/3zi2Hl,2AM4KL,%EC%84%9C%EC%9A%B8%EA%B3%A0%EC%9A%A9%EB%B3%B5%EC%A7%80%ED%94%8C%EB%9F%AC%EC%8A%A4%EC%84%BC%ED%84%B0,1845904326,PLACE_POI/-/car?c=15.00,0,0,0,dh" target="_blank" className="flex items-center justify-center gap-2 bg-[#03C75A] text-white py-3 mt-3 rounded-xl font-bold text-[11px] sm:text-xs active:scale-95 transition-all w-full shadow-md border-none text-center"><Icon name="navigation" size={14} /> 네이버 지도 길찾기</a>
                             </div>
-                            
                             <div className="flex flex-col items-center">
                                 <div className="relative inline-block mb-3">
-                                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-white px-4 py-2 rounded-xl shadow-md border border-orange-50 whitespace-nowrap z-20 animate-bounce-slow text-center">
-                                        <p className="text-indigo-600 font-bold text-[10px] sm:text-[11px]">청년의 꿈을 이뤄주는 서울고용센터에 오세요 ✨</p>
-                                        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-orange-50 rotate-45"></div>
-                                    </div>
+                                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-white px-4 py-2 rounded-xl shadow-md border border-orange-50 whitespace-nowrap z-20 animate-bounce-slow text-center"><p className="text-indigo-600 font-bold text-[10px] sm:text-[11px]">청년의 꿈을 이뤄주는 서울고용센터에 오세요 ✨</p><div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-orange-50 rotate-45"></div></div>
                                     <img src="300.png" alt="캐릭터" className="w-20 h-auto drop-shadow-xl mx-auto" />
                                 </div>
                             </div>
                         </div>
-
                         <div className="flex flex-wrap justify-center gap-2 mb-10 px-4">
                             <a href="https://www.work.go.kr/seoul/main.do" target="_blank" className="bg-slate-50 text-indigo-600 px-4 py-2.5 rounded-xl text-[10px] border border-orange-50 shadow-sm active:bg-indigo-50 border-none">공식 홈페이지</a>
                             <a href="https://www.work24.go.kr/cm/main.do" target="_blank" className="bg-slate-50 text-indigo-600 px-4 py-2.5 rounded-xl text-[10px] border border-orange-50 shadow-sm active:bg-indigo-50 border-none">고용24</a>
                             <a href="https://www.instagram.com/moel_seoulew/" target="_blank" className="bg-slate-50 text-indigo-600 px-4 py-2.5 rounded-xl text-[10px] border border-orange-50 shadow-sm active:bg-indigo-50 border-none">인스타그램</a>
                         </div>
-
                         <div className="w-full pt-8 border-t border-slate-100 flex flex-col items-center gap-5">
-                            <div className="flex items-center gap-5">
-                                <img src="서울지방고용노동청 로고 (1).png" alt="노동청" className="h-4 sm:h-6 w-auto" />
-                                <img src="서울고용복지플러스센터 bi.png" alt="센터" className="h-4 sm:h-6 w-auto" />
-                            </div>
+                            <div className="flex items-center gap-5 border-none"><img src="서울지방고용노동청 로고 (1).png" alt="노동청" className="h-4 sm:h-6 w-auto" /><img src="서울고용복지플러스센터 bi.png" alt="센터" className="h-4 sm:h-6 w-auto" /></div>
                             <p className="text-slate-400 text-[9px] uppercase tracking-widest mt-2 text-center">© 2026 Seoul Employment Center. All Rights Reserved.</p>
                         </div>
                     </footer>
